@@ -17,9 +17,16 @@ using v8::Object;
 using v8::ObjectTemplate;
 using v8::String;
 using v8::Value;
+using v8::Boolean;
 
-void IpVPN::Init(Local<Object> exports) {
-Isolate *isolate = exports->GetIsolate();
+IpVPN::IpVPN(string path)
+{
+  dataPath = path;
+}
+
+void IpVPN::Init(Local<Object> exports)
+{
+  Isolate *isolate = exports->GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
 
   Local<ObjectTemplate> addon_data_tpl = ObjectTemplate::New(isolate);
@@ -42,99 +49,46 @@ Isolate *isolate = exports->GetIsolate();
       .FromJust();
 }
 
-unsigned int IpUtils::ipv4ToNumber(string ip)
+void IpVPN::New(const FunctionCallbackInfo<Value> &args)
 {
-  unsigned int rs = 0;
-  short part;
-  short leftPart = 4;
-  istringstream ipstream(ip);
-  while (ipstream >> part)
+  Isolate *isolate = args.GetIsolate();
+  Local<Context> context = isolate->GetCurrentContext();
+
+  if (args.IsConstructCall())
   {
-    rs |= (part << (--leftPart * 8));
-    if (ipstream.peek() == '.')
+    if (args.length != 1 || !args[0]->IsString())
     {
-      ipstream.ignore();
+      isolate->ThrowException(Exception::TypeError(
+          String::NewFromUtf8(isolate,
+                              "Data file path must be a string")
+              .ToLocalChecked()));
+      return;
     }
+    String::Utf8Value str(isolate, args[0]);
+    std::string cppStr(*str);
+    IpVPN *ipVPN = new IpVPN(cppStr);
+    ipVPN->initArray();
+    ipVPN->preProcessData();
+    ipVPN->Wrap(args.This());
+    args.GetReturnValue().Set(args.This());
   }
-  return rs;
+  else
+  {
+    // Invoked as plain function `MyObject(...)`, turn into construct call.
+    const int argc = 1;
+    Local<Value> argv[argc] = {args[0]};
+    Local<Function> cons = args.Data().As<Object>()->GetInternalField(0).As<Function>();
+    Local<Object> result = cons->NewInstance(context, argc, argv).ToLocalChecked();
+    args.GetReturnValue().Set(result);
+  }
 }
 
-void IpUtils::initArray()
+void IpVPN::IsVPN(const FunctionCallbackInfo<Value> &args)
 {
-  cout << "init array" << endl;
-  ifstream file(dataPath);
-  if (!file.is_open())
-  {
-    cerr << "Load data failed\n";
-    return;
-  }
-  string line;
-  int i = 0;
-  int count = 0;
-  while (getline(file, line))
-  {
-    int start;
-    int end;
-    istringstream lineStream(line);
-    string prop;
-
-    getline(lineStream, prop, ',');
-    start = stoul(prop.erase(0, 1));
-    getline(lineStream, prop, ',');
-    end = stoul(prop.erase(0, 1));
-
-    for (int ip = start; ip <= end; ip++)
-    {
-      count++;
-    }
-  }
-  cout << "count" << count;
-  totalIp = count;
-  unsigned int *t = new unsigned int[count];
-  ips = t;
-  file.close();
-}
-
-void IpUtils::preProcessData()
-{
-  cout << "preprocess data" << endl;
-  ifstream file(dataPath);
-  if (!file.is_open())
-  {
-    cerr << "Load data failed\n";
-    return;
-  }
-  string line;
-  int i = 0;
-  while (getline(file, line))
-  {
-    int start;
-    int end;
-    istringstream lineStream(line);
-    string prop;
-
-    getline(lineStream, prop, ',');
-    start = stoul(prop.erase(0, 1));
-    getline(lineStream, prop, ',');
-    end = stoul(prop.erase(0, 1));
-
-    for (int ip = start; ip <= end; ip++)
-    {
-      ips[i++] = ip;
-    }
-  }
-  cout << "start sort" << endl;
-  sort_heap(ips, ips + totalIp);
-  cout << "end sort" << endl;
-  file.close();
-}
-
-unsigned int *IpUtils::getIps()
-{
-  return ips;
-}
-
-bool IpUtils::getIp(unsigned int target)
-{
-  return binary_search(ips, ips + totalIp, target);
+  Isolate *isolate = args.GetIsolate();
+  IpVPN *ipVPN = ObjectWrap::Unwrap<IpVPN>(args.Holder());
+  String::Utf8Value v8IpString(isolate, args[0]);
+  string ipString(*v8IpString);
+  bool isVPN = ipVPN->isVPN(ipString);
+  args.GetReturnValue().Set(Boolean)
 }

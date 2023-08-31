@@ -1,8 +1,8 @@
 {
   "targets": [
     {
-      "target_name": "test",
-      "sources": [ "addon.cc", "test.cc", "ipvpn.cc" ]
+      "target_name": "vpn",
+      "sources": [ "addon.cc", "vpn.cc", "ipvpn.cc" ]
     }
   ]
 }

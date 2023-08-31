@@ -44,7 +44,6 @@ void IpVPN::initArray()
     return;
   }
   string line;
-  int i = 0;
   int count = 0;
   while (getline(file, line))
   {

@@ -1,8 +1,8 @@
 const express = require('express')
-const { IpVPN } = require('./build/Release/test')
+const { IpVPN } = require('./build/Release/vpn')
 const app = express()
-
-const vvv = new IpVPN('IP2PROXY-LITE-PX1.CSV')
+console.log(process.env.D)
+const vvv = new IpVPN(process.env.D)
 
 app.get('/', (req, res) => {
   console.time('S')

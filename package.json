@@ -1,0 +1,11 @@
+{
+  "name": "bsearch",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/mrkienkptn/vpnchecker.git",
+  "author": "KienTV <kientv@gviet.vn>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

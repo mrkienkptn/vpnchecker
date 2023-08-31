@@ -1,0 +1,14 @@
+{
+  "C_Cpp.default.compilerPath": "C:\\cygwin64\\bin\\gcc.exe",
+  "C_Cpp.errorSquiggles": "disabled",
+  "files.associations": {
+    "*.tcc": "cpp",
+    "iosfwd": "cpp",
+    "iostream": "cpp",
+    "functional": "cpp"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  "python.formatting.provider": "none"
+}
